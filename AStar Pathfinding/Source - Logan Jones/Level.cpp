@@ -102,7 +102,7 @@ std::vector<Node*> Level::connectNeighbours(int _row, int _column)
 	//calculate each neighbour 
 	std::vector<sf::Vector2i> surroundings = {  {-1, -1},  {0, -1},   {1, -1},
 												{-1, 0} ,			  {1, 0} ,
-												{-1, 1} ,   {0, 1},   {1, 1} };
+												{-1, 1} ,  {0, 1},    {1, 1} };
 
 	for (size_t i = 0; i < surroundings.size(); i++)
 	{
@@ -367,6 +367,8 @@ void Level::depthFirst()
 }
 bool Level::depthFirstRecursive(int _row, int _column, std::vector<std::vector<bool>>& _checked, int& _collected)
 {
+	Node* current = m_graphData[_row][_column];
+
 	//safety check 
 	if (_checked[_row][_column])
 	{
@@ -375,7 +377,7 @@ bool Level::depthFirstRecursive(int _row, int _column, std::vector<std::vector<b
 
 	//set first value to checked
 	_checked[_row][_column] = true;
-	m_graphData[_row][_column]->updateColor(openState);
+	current->updateColor(openState);
 
 #ifdef _DEBUG
 
@@ -385,36 +387,39 @@ bool Level::depthFirstRecursive(int _row, int _column, std::vector<std::vector<b
 #endif
 
 	//check if Node is a key item
-	if (m_graphData[_row][_column]->m_key >= 'a' && m_graphData[_row][_column]->m_key <= 'j')
+	if (current->m_key >= 'a' && current->m_key <= 'j')
 	{
-		std::cout << m_graphData[_row][_column]->m_key << " has been picked up\n";
+		std::cout << current->m_key << " has been picked up\n";
 		_collected++;
 
 		//check if all itmes are collected and send return true pulse up the recursed chain.
 		if (_collected >= 10)
 		{
-			m_graphData[_row][_column]->updateColor(closedState);
+			current->updateColor(closedState);
 			std::cout << "All Items have been collected\n";
 			return true;
 		}
 	}
 
+	// sort neighbours to find smallest distance
+	std::vector<Node*> sortedNeighbours = current->m_neighbours;
+	std::sort(sortedNeighbours.begin(), sortedNeighbours.end(), distanceComparison(current, this));
 
 	//iterate through each neighbour and recurse
-	for (auto neighbour : m_graphData[_row][_column]->m_neighbours)
+	for (Node* neighbour : sortedNeighbours)
 	{
 		if (!_checked[neighbour->row][neighbour->column] && neighbour->m_key != 'x')
 		{
 			if (depthFirstRecursive(neighbour->row, neighbour->column, _checked, _collected))
 			{
-				m_graphData[_row][_column]->updateColor(closedState);
+				current->updateColor(closedState);
 				return true;
 			}
 		}
 	}
 
 	//update state after finished with it.
-	m_graphData[_row][_column]->updateColor(closedState);
+	current->updateColor(closedState);
 
 	return false;
 }
@@ -457,11 +462,7 @@ void Level::breadthFirst(Node* _start)
 
 		current->updateColor(closedState);
 
-		// sort neighbours to find smallest distance
-		std::vector<Node*> sortedNeighbours = current->m_neighbours;
-		std::sort(sortedNeighbours.begin(), sortedNeighbours.end(), distanceComparison(current, this));
-
-		for (Node* neighbour : sortedNeighbours)
+		for (Node* neighbour : current->m_neighbours)
 		{
 			int row = neighbour->row;
 			int column = neighbour->column;
