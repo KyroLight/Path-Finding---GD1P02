@@ -110,5 +110,6 @@ public:
 
 	void bullshitPlayaroundColors();
 	std::string openFileDialog();
+	std::string saveFileDialog();
 };
 

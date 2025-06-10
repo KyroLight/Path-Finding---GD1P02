@@ -84,7 +84,8 @@ int main()
                     newLevel.setLevel();
 
                     newLevel.aStarPathfinding(newLevel.getStart(), newLevel.getEnd());
-                    newLevel.saveAStarPath("A Star Path Map.txt");
+                    newLevel.saveFileDialog();
+                    //newLevel.saveAStarPath("A Star Path Map.txt");
                 }
 
             }

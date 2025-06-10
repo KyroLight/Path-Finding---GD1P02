@@ -332,6 +332,44 @@ std::string Level::openFileDialog()
 	}
 	return "";
 }
+std::string Level::saveFileDialog()
+{
+	// This function opens a save file dialog and returns the selected file path.
+	OPENFILENAME Ofn;
+	wchar_t FileName[MAX_PATH] = L"";
+
+	ZeroMemory(&Ofn, sizeof(Ofn));
+	Ofn.lStructSize = sizeof(Ofn);
+	Ofn.hwndOwner = nullptr;
+	Ofn.lpstrFile = FileName;
+	Ofn.nMaxFile = MAX_PATH;
+	Ofn.lpstrFilter = L"All Files\0*.*\0";
+	Ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;  // Adjusted flags for saving.
+
+	// Use GetSaveFileName instead of GetOpenFileName
+	if (GetSaveFileName(&Ofn))
+	{
+		std::ofstream saveFile(FileName);
+		if (!saveFile)
+		{
+			std::cerr << "Failed to open file for saving: " << FileName << std::endl;
+			return "";
+		}
+
+		for (int row = 0; row < m_graphData.size(); row++)
+		{
+			for (int column = 0; column < m_graphData[row].size(); column++)
+			{
+				saveFile << m_graphData[row][column]->m_key;
+			}
+			saveFile << std::endl;
+		}
+
+		saveFile.close();
+		std::cout << "Path saved and named: " << FileName << std::endl;
+	}
+	return "";
+}
 std::vector<Node*> Level::highlightPath(Node* _end, bool _changeKey)
 {
 	std::vector<Node*> path;
